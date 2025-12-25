@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>急救給藥紀錄器</title>
+    
+    <!-- PWA 相關設定 (Manifest & Meta) -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1f2937">
+    <meta name="application-name" content="ACLS Timer">
+
+    <!-- 連結外部 CSS 檔案 -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- 使用 Tailwind CSS 進行快速樣式設計 (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 FontAwesome 圖示 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white h-[100dvh] flex flex-col overflow-hidden">
+
+    <!-- 頂部資訊欄 -->
+    <header class="bg-gray-800 p-3 shadow-lg z-10">
+        <div class="flex justify-between items-center mb-2">
+            <div class="flex-1">
+                <span class="text-gray-400 text-xs block">總急救時間</span>
+                <span id="totalTimer" class="text-3xl font-mono font-bold text-green-400">00:00</span>
+            </div>
+            
+            <!-- 中間狀態文字顯示區 -->
+            <div id="statusDisplay" class="flex-[2] text-center font-bold text-xl leading-tight px-1"></div>
+
+            <div class="text-right flex-1">
+                <span class="text-gray-400 text-sm sm:text-lg block font-bold">
+                    <span class="text-xs text-blue-400 mr-1">Epinephrine</span>距離上次給藥
+                </span>
+                <span id="lastMedTimer" class="text-3xl sm:text-5xl font-mono text-yellow-400">--:--</span>
+            </div>
+        </div>
+
+        <!-- 統計數據 -->
+        <div class="grid grid-cols-3 gap-2 text-center bg-gray-700 rounded-lg p-2">
+            <div>
+                <div class="text-xs text-gray-400">腎上腺素</div>
+                <div id="epiCount" class="text-xl font-bold text-white">0</div>
+            </div>
+            <div>
+                <div class="text-xs text-gray-400">Amiodarone</div>
+                <div id="amioCount" class="text-xl font-bold text-white">0</div>
+            </div>
+            <div>
+                <div class="text-xs text-gray-400">電擊次數</div>
+                <div id="shockCount" class="text-xl font-bold text-red-400">0</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要操作區 -->
+    <main class="flex-1 p-4 flex flex-col gap-4 justify-center">
+        
+        <!-- 按鈕 1: 給藥 -->
+        <button onclick="openMedicationModal()" class="btn-active flex-1 bg-blue-600 rounded-2xl flex flex-col items-center justify-center shadow-lg border-b-8 border-blue-800 relative overflow-hidden group">
+            <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+            <i class="fa-solid fa-syringe text-5xl mb-2"></i>
+            <span class="text-4xl font-bold tracking-widest">給藥</span>
+            <span class="text-sm mt-1 opacity-80">(Epinephrine / Amiodarone)</span>
+        </button>
+
+        <!-- 按鈕 2: 電擊 -->
+        <button onclick="confirmShock()" class="btn-active flex-1 bg-yellow-500 text-black rounded-2xl flex flex-col items-center justify-center shadow-lg border-b-8 border-yellow-700 relative overflow-hidden group">
+            <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+            <i class="fa-solid fa-bolt text-5xl mb-2"></i>
+            <span class="text-4xl font-bold tracking-widest">電擊</span>
+            <span class="text-sm mt-1 opacity-80 font-bold">Defibrillation</span>
+        </button>
+
+        <!-- 按鈕 3: 歷史紀錄 & 重置 -->
+        <div class="h-24 flex gap-4">
+            <button onclick="openHistory()" class="btn-active flex-[2] bg-gray-600 rounded-xl flex items-center justify-center shadow-md border-b-4 border-gray-800 text-xl font-bold">
+                <i class="fa-solid fa-clock-rotate-left mr-2"></i> 歷史紀錄
+            </button>
+            <button onclick="confirmReset()" class="btn-active flex-1 bg-red-900 rounded-xl flex flex-col items-center justify-center shadow-md border-b-4 border-black text-red-200">
+                <span class="text-xs">結束/重置</span>
+                <i class="fa-solid fa-power-off mt-1"></i>
+            </button>
+        </div>
+    </main>
+
+    <!-- Modal: 給藥選擇 (腎上腺素 vs Amiodarone) -->
+    <div id="medModal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="w-full max-w-md bg-gray-800 rounded-2xl p-4 border border-gray-600 shadow-2xl">
+            <h2 class="text-2xl font-bold text-center mb-6 text-white border-b border-gray-600 pb-2">選擇藥物</h2>
+            
+            <div class="flex flex-col gap-4">
+                <button onclick="confirmMed('Epinephrine')" class="btn-active p-6 bg-red-600 rounded-xl text-left shadow-lg flex items-center justify-between border-l-8 border-red-800">
+                    <div>
+                        <span class="block text-3xl font-bold text-white">Epinephrine</span>
+                        <span class="text-red-200 text-sm">每 3-5 分鐘一次</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-2xl opacity-50"></i>
+                </button>
+
+                <button onclick="confirmMed('Amiodarone')" class="btn-active p-6 bg-purple-600 rounded-xl text-left shadow-lg flex items-center justify-between border-l-8 border-purple-800">
+                    <div>
+                        <span class="block text-3xl font-bold text-white">Amiodarone</span>
+                        <span class="text-purple-200 text-sm">抗心律不整藥物</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-2xl opacity-50"></i>
+                </button>
+            </div>
+
+            <button onclick="closeModal('medModal')" class="mt-6 w-full py-4 bg-gray-700 rounded-xl text-gray-300 font-bold text-lg">
+                取消
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal: 通用確認視窗 -->
+    <div id="confirmModal" class="hidden fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-6 backdrop-blur-sm">
+        <div class="w-full max-w-sm bg-white text-gray-900 rounded-2xl p-6 shadow-2xl text-center transform scale-100 transition-transform">
+            <div class="mb-4">
+                <i class="fa-solid fa-triangle-exclamation text-5xl text-yellow-500 mb-2"></i>
+                <h3 class="text-2xl font-bold mb-2">確認操作</h3>
+                <p id="confirmMessage" class="text-xl text-gray-600 font-bold p-2 bg-gray-100 rounded">確認內容</p>
+            </div>
+            <div class="flex gap-4 mt-6">
+                <button onclick="closeModal('confirmModal')" class="flex-1 py-4 bg-gray-300 rounded-xl font-bold text-lg text-gray-700">取消</button>
+                <button id="confirmBtnAction" class="flex-1 py-4 bg-red-600 text-white rounded-xl font-bold text-lg shadow-lg">確認執行</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: 歷史紀錄 -->
+    <div id="historyModal" class="hidden fixed inset-0 bg-gray-900 z-50 flex flex-col">
+        <div class="bg-gray-800 p-4 shadow-md flex justify-between items-center border-b border-gray-700">
+            <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-clipboard-list mr-2"></i>急救紀錄</h2>
+            <button onclick="closeModal('historyModal')" class="text-gray-400 hover:text-white p-2 text-2xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 history-list">
+            <div id="logContainer" class="flex flex-col gap-2">
+                <!-- 紀錄將插在這裡 -->
+                <p class="text-center text-gray-500 mt-10">尚無紀錄</p>
+            </div>
+        </div>
+        <div class="p-4 bg-gray-800 border-t border-gray-700">
+            <button onclick="copyHistory()" class="w-full py-3 bg-blue-600 rounded-xl text-white font-bold shadow-lg">
+                <i class="fa-solid fa-copy mr-2"></i> 複製紀錄到剪貼簿
+            </button>
+        </div>
+    </div>
+
+    <!-- 連結外部 JS 檔案 -->
+    <script src="script.js"></script>
+</body>
+</html>
