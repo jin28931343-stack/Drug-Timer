@@ -5,7 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>急救給藥紀錄器</title>
     
-    <!-- PWA 相關設定 (Manifest & Meta) -->
+   <!-- PWA 核心設定 -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- iOS 與瀏覽器圖示設定 (靜態連結) -->
+    <link rel="apple-touch-icon" href="PIC/Drug-timer.png">
+    <link rel="icon" type="image/png" href="PIC/Drug-timer.png">
+
+    <!-- iOS PWA 支援設定 -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -20,46 +27,46 @@
     <!-- 引入 FontAwesome 圖示 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-900 text-white h-[100dvh] flex flex-col overflow-hidden">
+<body class="bg-gray-900 text-white h-[100dvh] flex flex-col md:landscape:flex-row overflow-hidden transition-colors duration-500">
 
     <!-- 頂部資訊欄 -->
-    <header class="bg-gray-800 p-3 shadow-lg z-10">
-        <div class="flex justify-between items-center mb-2">
-            <div class="flex-1">
-                <span class="text-gray-400 text-xs block">總急救時間</span>
-                <span id="totalTimer" class="text-3xl font-mono font-bold text-green-400">00:00</span>
+    <header class="bg-gray-800 p-3 shadow-lg z-10 md:landscape:w-1/3 md:landscape:h-full md:landscape:flex md:landscape:flex-col md:landscape:justify-between md:landscape:border-r md:landscape:border-gray-700">
+        <div class="flex justify-between items-center mb-2 md:landscape:flex-col md:landscape:items-stretch md:landscape:gap-6 md:landscape:flex-1 md:landscape:justify-center">
+            <div class="flex-1 md:landscape:text-center">
+                <span class="text-gray-400 text-xs block md:landscape:text-lg">總急救時間</span>
+                <span id="totalTimer" class="text-3xl font-mono font-bold text-green-400 md:landscape:text-6xl">00:00</span>
             </div>
             
             <!-- 中間狀態文字顯示區 -->
-            <div id="statusDisplay" class="flex-[2] text-center font-bold text-xl leading-tight px-1"></div>
+            <div id="statusDisplay" class="flex-[2] text-center font-bold text-xl leading-tight px-1 md:landscape:my-4 md:landscape:text-3xl"></div>
 
-            <div class="text-right flex-1">
+            <div class="text-right flex-1 md:landscape:text-center">
                 <span class="text-gray-400 text-sm sm:text-lg block font-bold">
-                    <span class="text-xs text-blue-400 mr-1">Epinephrine</span>距離上次給藥
+                    <span class="text-xs text-blue-400 mr-1 md:landscape:inline">Epinephrine</span>距離上次給藥
                 </span>
-                <span id="lastMedTimer" class="text-3xl sm:text-5xl font-mono text-yellow-400">--:--</span>
+                <span id="lastMedTimer" class="text-3xl sm:text-5xl font-mono text-yellow-400 md:landscape:text-7xl">--:--</span>
             </div>
         </div>
 
         <!-- 統計數據 -->
-        <div class="grid grid-cols-3 gap-2 text-center bg-gray-700 rounded-lg p-2">
+        <div class="grid grid-cols-3 gap-2 text-center bg-gray-700 rounded-lg p-2 md:landscape:grid-cols-1 md:landscape:gap-4 md:landscape:p-4">
             <div>
-                <div class="text-xs text-gray-400">腎上腺素</div>
-                <div id="epiCount" class="text-xl font-bold text-white">0</div>
+                <div class="text-xs text-gray-400 md:landscape:text-sm">腎上腺素</div>
+                <div id="epiCount" class="text-xl font-bold text-white md:landscape:text-3xl">0</div>
             </div>
             <div>
-                <div class="text-xs text-gray-400">Amiodarone</div>
-                <div id="amioCount" class="text-xl font-bold text-white">0</div>
+                <div class="text-xs text-gray-400 md:landscape:text-sm">Amiodarone</div>
+                <div id="amioCount" class="text-xl font-bold text-white md:landscape:text-3xl">0</div>
             </div>
             <div>
-                <div class="text-xs text-gray-400">電擊次數</div>
-                <div id="shockCount" class="text-xl font-bold text-red-400">0</div>
+                <div class="text-xs text-gray-400 md:landscape:text-sm">電擊次數</div>
+                <div id="shockCount" class="text-xl font-bold text-red-400 md:landscape:text-3xl">0</div>
             </div>
         </div>
     </header>
 
     <!-- 主要操作區 -->
-    <main class="flex-1 p-4 flex flex-col gap-4 justify-center">
+    <main class="flex-1 p-4 flex flex-col gap-4 justify-center md:landscape:h-full md:landscape:p-6 md:landscape:gap-6">
         
         <!-- 按鈕 1: 給藥 -->
         <button onclick="openMedicationModal()" class="btn-active flex-1 bg-blue-600 rounded-2xl flex flex-col items-center justify-center shadow-lg border-b-8 border-blue-800 relative overflow-hidden group">

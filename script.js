@@ -25,7 +25,7 @@
         "display": "standalone",
         "background_color": "#111827",
         "theme_color": "#1f2937",
-        "orientation": "portrait",
+        "orientation": "any",
         "icons": [{
             "src": iconUrl,
             "sizes": "192x192 512x512", // 設定常見尺寸

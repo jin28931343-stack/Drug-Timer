@@ -1,0 +1,23 @@
+{
+    "name": "ACLS 急救給藥計時",
+    "short_name": "ACLS Timer",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#111827",
+    "theme_color": "#1f2937",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "PIC/Drug-timer.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "PIC/Drug-timer.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}
