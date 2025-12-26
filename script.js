@@ -1,5 +1,5 @@
 // --- PWA 設定與 Manifest 生成 (自動執行) ---
-(function() {
+(function () {
     // 1. 設定圖示路徑 (使用上傳的圖片)
     // 使用 URL 物件將相對路徑轉為絕對路徑，確保在 Blob Manifest 中能正確讀取
     const iconUrl = new URL('PIC/Drug-timer.png', window.location.href).href;
@@ -36,7 +36,7 @@
 
     // 5. 注入 Manifest
     const stringManifest = JSON.stringify(manifest);
-    const blob = new Blob([stringManifest], {type: 'application/json'});
+    const blob = new Blob([stringManifest], { type: 'application/json' });
     const manifestURL = URL.createObjectURL(blob);
     const linkManifest = document.createElement('link');
     linkManifest.rel = 'manifest';
@@ -89,9 +89,9 @@ function playBeep(times = 1) {
 
         oscillator.type = 'sine';
         oscillator.frequency.value = 880; // A5 音高 (880Hz)
-        
+
         const now = audioCtx.currentTime;
-        
+
         // 聲音包絡線 (Envelope) 避免爆音
         gainNode.gain.setValueAtTime(0, now);
         gainNode.gain.linearRampToValueAtTime(1, now + 0.05);
@@ -102,7 +102,7 @@ function playBeep(times = 1) {
 
         // 遞迴呼叫播放下一聲 (間隔 400ms)
         oscillator.onended = () => {
-            setTimeout(() => playTone(i + 1), 100); 
+            setTimeout(() => playTone(i + 1), 100);
         };
     };
 
@@ -147,7 +147,7 @@ function updateTimers() {
     if (!state.startTime) return;
 
     const now = new Date();
-    
+
     // 總時間
     const totalDiff = Math.floor((now - state.startTime) / 1000);
     document.getElementById('totalTimer').innerText = formatTime(totalDiff);
@@ -160,15 +160,15 @@ function updateTimers() {
     if (state.lastMedTime) {
         const medDiff = Math.floor((now - state.lastMedTime) / 1000);
         lastMedDisplay.innerText = formatTime(medDiff);
-        
+
         // 移除舊的背景色 class
         body.classList.remove('bg-gray-900', 'bg-yellow-800', 'bg-red-900');
 
         // 狀態判斷與音效觸發
-        if (medDiff >= 300) { 
+        if (medDiff >= 300) {
             // >= 5 分鐘
             body.classList.add('bg-red-900');
-            
+
             statusDisplay.innerText = "已超過給藥時間";
             statusDisplay.className = "flex-[2] text-center font-bold text-2xl sm:text-4xl leading-tight px-1 text-white animate-pulse tracking-widest";
             lastMedDisplay.classList.remove('text-yellow-400');
@@ -198,7 +198,7 @@ function updateTimers() {
         } else {
             // < 3 分鐘
             body.classList.add('bg-gray-900');
-            
+
             statusDisplay.innerText = "";
             statusDisplay.className = "flex-[2] text-center font-bold text-xl leading-tight px-1";
             lastMedDisplay.classList.add('text-yellow-400');
@@ -234,25 +234,50 @@ function closeModal(id) {
 
 // 1. 給藥
 function confirmMed(drugName) {
-    closeModal('medModal'); 
-    showConfirm(`確認給予 <span class="text-red-600">${drugName}</span> ?`, () => {
+    closeModal('medModal');
+
+    // 定義執行給藥的邏輯函數 (共用)
+    const runMedicationAction = () => {
         startSessionIfNeeded();
-        
+
         if (drugName === 'Epinephrine') {
             state.epiCount++;
             document.getElementById('epiCount').innerText = state.epiCount;
-            
+
             // 重置給藥計時與警示狀態
             state.lastMedTime = new Date();
             state.alertLevel = 0; // 重置警示等級，讓下一次計時能再次觸發聲音
-            
+
         } else if (drugName === 'Amiodarone') {
             state.amioCount++;
             document.getElementById('amioCount').innerText = state.amioCount;
         }
-        
+
         addLog(`給藥: ${drugName}`, 'Medication');
-    });
+    };
+
+    // 檢查: 如果是 Epinephrine 且距離上次給藥未滿 3 分鐘 (180秒)
+    if (drugName === 'Epinephrine' && state.lastMedTime) {
+        const now = new Date();
+        const diff = Math.floor((now - state.lastMedTime) / 1000);
+
+        if (diff < 180) {
+            // 未滿 3 分鐘 -> 顯示警告視窗取代原本的確認視窗
+            showConfirm(
+                `<div class="flex flex-col gap-2">
+                    <div class="text-red-600 text-2xl"><i class="fa-solid fa-circle-exclamation"></i> 注意：未滿 3 分鐘</div>
+                    <div class="text-gray-800">距離上次給藥僅 <span class="font-mono text-3xl font-bold">${formatTime(diff)}</span></div>
+                    <div class="text-sm text-gray-500">標準間隔：3-5 分鐘</div>
+                    <div class="mt-2 pt-2 border-t border-gray-300 font-bold text-lg text-red-700">仍要強制給藥嗎？</div>
+                </div>`,
+                runMedicationAction
+            );
+            return; // 結束函式，不執行下方的正常確認
+        }
+    }
+
+    // 正常情況 (第一次給藥 或 超過3分鐘 或 其他藥物) -> 顯示標準確認視窗
+    showConfirm(`確認給予 <span class="text-red-600">${drugName}</span> ?`, runMedicationAction);
 }
 
 // 2. 電擊
@@ -268,10 +293,65 @@ function confirmShock() {
 // 3. 重置
 function confirmReset() {
     showConfirm('確認結束急救並清除所有資料?', () => {
-        location.reload();
+        resetSession();
     });
 }
 
+// 新增：執行重置邏輯 (不 reload 頁面)
+function resetSession() {
+    // 1. 停止計時器
+    if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+        state.timerInterval = null;
+    }
+
+    // 2. 加入結束紀錄
+    addLog('--- 急救結束 (重置狀態) ---', 'System');
+
+    // 3. 重置狀態變數 (保留 state.logs)
+    state.startTime = null;
+    state.lastMedTime = null;
+    state.alertLevel = 0;
+    state.shocks = 0;
+    state.epiCount = 0;
+    state.amioCount = 0;
+
+    // 4. 重置 UI顯示
+    document.getElementById('totalTimer').innerText = "00:00";
+    document.getElementById('lastMedTimer').innerText = "--:--";
+
+    const statusDisplay = document.getElementById('statusDisplay');
+    statusDisplay.innerText = "";
+    statusDisplay.className = "flex-[2] text-center font-bold text-xl leading-tight px-1";
+
+    document.getElementById('epiCount').innerText = "0";
+    document.getElementById('amioCount').innerText = "0";
+    document.getElementById('shockCount').innerText = "0";
+
+    // 5. 重置背景色與樣式
+    const body = document.body;
+    body.classList.remove('bg-yellow-800', 'bg-red-900');
+    body.classList.add('bg-gray-900');
+
+    const lastMedDisplay = document.getElementById('lastMedTimer');
+    lastMedDisplay.classList.add('text-yellow-400');
+    lastMedDisplay.classList.remove('text-red-500', 'text-white', 'alert-pulse');
+}
+
+// 新增：清除歷史紀錄的功能
+function confirmClearHistory() {
+    if (state.logs.length === 0) return;
+
+    // 暫時關閉歷史視窗以顯示確認視窗
+    closeModal('historyModal');
+
+    showConfirm('<span class="text-red-600">確認永久刪除所有歷史紀錄?</span>', () => {
+        state.logs = []; // 清空陣列
+        renderLogs();    // 更新顯示
+        // 重新打開歷史視窗
+        document.getElementById('historyModal').classList.remove('hidden');
+    });
+}
 // 通用確認視窗邏輯
 function showConfirm(messageHTML, actionCallback) {
     const modal = document.getElementById('confirmModal');
@@ -293,8 +373,8 @@ function showConfirm(messageHTML, actionCallback) {
 // --- 紀錄系統 ---
 function addLog(action, type) {
     const now = new Date();
-    const timeStr = now.toTimeString().split(' ')[0]; 
-    
+    const timeStr = now.toTimeString().split(' ')[0];
+
     let elapsedStr = "00:00";
     if (state.startTime) {
         const diff = Math.floor((now - state.startTime) / 1000);
@@ -308,7 +388,10 @@ function addLog(action, type) {
 
 function renderLogs() {
     const container = document.getElementById('logContainer');
-    if (state.logs.length === 0) return;
+    if (state.logs.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 mt-10">尚無紀錄</p>';
+        return;
+    }
 
     container.innerHTML = state.logs.slice().reverse().map(log => {
         let borderClass = 'border-gray-600';
@@ -345,7 +428,7 @@ function openHistory() {
 
 async function copyHistory() {
     if (state.logs.length === 0) return;
-    
+
     let text = "急救紀錄 (ACLS Log):\n";
     text += `開始時間: ${state.startTime ? state.startTime.toLocaleString() : 'N/A'}\n`;
     text += "------------------------\n";
