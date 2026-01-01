@@ -38,9 +38,9 @@
         <div
             class="flex justify-between items-center mb-2 md:landscape:flex-col md:landscape:items-stretch md:landscape:gap-6 md:landscape:flex-1 md:landscape:justify-center">
             <div class="flex-1 md:landscape:text-center">
-                <span class="text-gray-400 text-xs block md:landscape:text-lg">總急救時間</span>
+                <span class="text-white text-xs block md:landscape:text-lg">現在時間</span>
                 <span id="totalTimer"
-                    class="text-3xl font-mono font-bold text-green-400 md:landscape:text-6xl">00:00</span>
+                    class="text-3xl font-mono font-bold text-white md:landscape:text-6xl">--:--</span>
             </div>
 
             <!-- 中間狀態文字顯示區 -->
@@ -49,11 +49,11 @@
             </div>
 
             <div class="text-right flex-1 md:landscape:text-center">
-                <span class="text-gray-400 text-sm sm:text-lg block font-bold">
+                <span class="text-white text-sm sm:text-lg block font-bold">
                     <span class="text-xs text-blue-400 mr-1 md:landscape:inline">Epinephrine</span>距離上次給藥
                 </span>
                 <span id="lastMedTimer"
-                    class="text-3xl sm:text-5xl font-mono text-yellow-400 md:landscape:text-7xl">--:--</span>
+                    class="text-3xl sm:text-5xl font-mono text-white md:landscape:text-7xl">--:--</span>
             </div>
         </div>
 
@@ -61,16 +61,16 @@
         <div
             class="grid grid-cols-3 gap-2 text-center bg-gray-700 rounded-lg p-2 md:landscape:grid-cols-1 md:landscape:gap-4 md:landscape:p-4">
             <div>
-                <div class="text-xs text-gray-400 md:landscape:text-sm">腎上腺素</div>
+                <div class="text-xs text-white md:landscape:text-sm">腎上腺素</div>
                 <div id="epiCount" class="text-xl font-bold text-white md:landscape:text-3xl">0</div>
             </div>
             <div>
-                <div class="text-xs text-gray-400 md:landscape:text-sm">Amiodarone</div>
+                <div class="text-xs text-white md:landscape:text-sm">Amiodarone</div>
                 <div id="amioCount" class="text-xl font-bold text-white md:landscape:text-3xl">0</div>
             </div>
             <div>
-                <div class="text-xs text-gray-400 md:landscape:text-sm">電擊次數</div>
-                <div id="shockCount" class="text-xl font-bold text-red-400 md:landscape:text-3xl">0</div>
+                <div class="text-xs text-white md:landscape:text-sm">電擊次數</div>
+                <div id="shockCount" class="text-xl font-bold text-white md:landscape:text-3xl">0</div>
             </div>
         </div>
     </header>
@@ -113,51 +113,50 @@
     <!-- Modal: 給藥選擇 (腎上腺素 vs Amiodarone) -->
     <div id="medModal"
         class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="w-full max-w-md bg-gray-800 rounded-2xl p-4 border border-gray-600 shadow-2xl">
+        <div class="w-full max-w-md bg-black rounded-2xl p-4 border-2 border-white shadow-2xl">
             <h2 class="text-2xl font-bold text-center mb-6 text-white border-b border-gray-600 pb-2">選擇藥物</h2>
 
             <div class="flex flex-col gap-4">
                 <button onclick="confirmMed('Epinephrine')"
-                    class="btn-active p-6 bg-red-600 rounded-xl text-left shadow-lg flex items-center justify-between border-l-8 border-red-800">
+                    class="btn-active p-6 bg-red-600 rounded-xl text-left shadow-lg flex items-center justify-between border border-white">
                     <div>
                         <span class="block text-3xl font-bold text-white">Epinephrine</span>
-                        <span class="text-red-200 text-sm">每 3-5 分鐘一次</span>
+                        <span class="text-white text-sm">每 3-5 分鐘一次</span>
                     </div>
-                    <i class="fa-solid fa-chevron-right text-2xl opacity-50"></i>
+                    <i class="fa-solid fa-chevron-right text-2xl opacity-100 text-white"></i>
                 </button>
 
                 <button onclick="confirmMed('Amiodarone')"
-                    class="btn-active p-6 bg-purple-600 rounded-xl text-left shadow-lg flex items-center justify-between border-l-8 border-purple-800">
+                    class="btn-active p-6 bg-purple-600 rounded-xl text-left shadow-lg flex items-center justify-between border border-white">
                     <div>
                         <span class="block text-3xl font-bold text-white">Amiodarone</span>
-                        <span class="text-purple-200 text-sm">抗心律不整藥物</span>
+                        <span class="text-white text-sm">抗心律不整藥物</span>
                     </div>
-                    <i class="fa-solid fa-chevron-right text-2xl opacity-50"></i>
+                    <i class="fa-solid fa-chevron-right text-2xl opacity-100 text-white"></i>
                 </button>
             </div>
 
             <button onclick="closeModal('medModal')"
-                class="mt-6 w-full py-4 bg-gray-700 rounded-xl text-gray-300 font-bold text-lg">
+                class="mt-6 w-full py-4 bg-gray-900 border-2 border-white rounded-xl text-white font-bold text-lg hover:bg-gray-800">
                 取消
             </button>
         </div>
     </div>
 
-    <!-- Modal: 通用確認視窗 -->
     <div id="confirmModal"
         class="hidden fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-6 backdrop-blur-sm">
         <div
-            class="w-full max-w-sm bg-white text-gray-900 rounded-2xl p-6 shadow-2xl text-center transform scale-100 transition-transform">
+            class="w-full max-w-sm bg-black text-white rounded-2xl p-6 shadow-2xl text-center transform scale-100 transition-transform border-2 border-white">
             <div class="mb-4">
-                <i class="fa-solid fa-triangle-exclamation text-5xl text-yellow-500 mb-2"></i>
+                <i class="fa-solid fa-triangle-exclamation text-5xl text-white mb-2"></i>
                 <h3 class="text-2xl font-bold mb-2">確認操作</h3>
-                <p id="confirmMessage" class="text-xl text-gray-600 font-bold p-2 bg-gray-100 rounded">確認內容</p>
+                <p id="confirmMessage" class="text-xl text-white font-bold p-2 bg-gray-900 border border-gray-600 rounded">確認內容</p>
             </div>
             <div class="flex gap-4 mt-6">
                 <button onclick="closeModal('confirmModal')"
-                    class="flex-1 py-4 bg-gray-300 rounded-xl font-bold text-lg text-gray-700">取消</button>
+                    class="flex-1 py-4 bg-gray-900 border-2 border-white rounded-xl font-bold text-lg text-white hover:bg-gray-800">取消</button>
                 <button id="confirmBtnAction"
-                    class="flex-1 py-4 bg-red-600 text-white rounded-xl font-bold text-lg shadow-lg">確認執行</button>
+                    class="flex-1 py-4 bg-red-600 text-white border-2 border-white rounded-xl font-bold text-lg shadow-lg">確認執行</button>
             </div>
         </div>
     </div>
@@ -169,10 +168,10 @@
             <!-- 加入按鈕群組 -->
             <div class="flex items-center gap-3">
                 <button onclick="confirmClearHistory()"
-                    class="bg-red-900/50 hover:bg-red-800 text-red-200 text-sm px-3 py-1.5 rounded border border-red-700 transition-colors">
+                    class="bg-red-900/50 hover:bg-red-800 text-white text-sm px-3 py-1.5 rounded border border-red-700 transition-colors">
                     <i class="fa-solid fa-trash-can mr-1"></i>清除紀錄
                 </button>
-                <button onclick="closeModal('historyModal')" class="text-gray-400 hover:text-white p-2 text-2xl">
+                <button onclick="closeModal('historyModal')" class="text-white hover:text-white p-2 text-2xl">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>

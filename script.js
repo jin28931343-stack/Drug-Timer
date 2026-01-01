@@ -46,7 +46,23 @@
 
 
 // --- 應用程式邏輯 ---
+// 新增：啟動實時時鐘 (自動執行，無需按鈕)
+function startRealTimeClock() {
+    const updateClock = () => {
+        const now = new Date();
+        const h = now.getHours().toString().padStart(2, '0');
+        const m = now.getMinutes().toString().padStart(2, '0');
+        const element = document.getElementById('totalTimer');
+        if (element) {
+            element.innerText = `${h}:${m}`;
+        }
+    };
+    updateClock(); // 立即執行一次
+    setInterval(updateClock, 1000); // 每秒更新
+}
 
+// 立即啟動時鐘
+startRealTimeClock();
 // 狀態變數
 let state = {
     startTime: null,     // 急救開始時間
@@ -148,9 +164,7 @@ function updateTimers() {
 
     const now = new Date();
 
-    // 總時間
-    const totalDiff = Math.floor((now - state.startTime) / 1000);
-    document.getElementById('totalTimer').innerText = formatTime(totalDiff);
+
 
     // 距離上次給藥時間
     const lastMedDisplay = document.getElementById('lastMedTimer');
@@ -171,7 +185,7 @@ function updateTimers() {
 
             statusDisplay.innerText = "已超過給藥時間";
             statusDisplay.className = "flex-[2] text-center font-bold text-2xl sm:text-4xl leading-tight px-1 text-white animate-pulse tracking-widest";
-            lastMedDisplay.classList.remove('text-yellow-400');
+            
             lastMedDisplay.classList.add('text-white', 'alert-pulse');
 
             // 觸發 5 分鐘音效 (2聲)
@@ -186,7 +200,6 @@ function updateTimers() {
 
             statusDisplay.innerText = "準備給藥";
             statusDisplay.className = "flex-[2] text-center font-bold text-2xl sm:text-4xl leading-tight px-1 text-white animate-pulse tracking-widest";
-            lastMedDisplay.classList.remove('text-yellow-400', 'text-red-500');
             lastMedDisplay.classList.add('text-white', 'alert-pulse');
 
             // 觸發 3 分鐘音效 (1聲)
@@ -201,8 +214,8 @@ function updateTimers() {
 
             statusDisplay.innerText = "";
             statusDisplay.className = "flex-[2] text-center font-bold text-xl leading-tight px-1";
-            lastMedDisplay.classList.add('text-yellow-400');
-            lastMedDisplay.classList.remove('text-red-500', 'text-white', 'alert-pulse');
+            lastMedDisplay.classList.add('text-white');
+            lastMedDisplay.classList.remove('alert-pulse');
         }
     } else {
         lastMedDisplay.innerText = "--:--";
@@ -265,10 +278,10 @@ function confirmMed(drugName) {
             // 未滿 3 分鐘 -> 顯示警告視窗取代原本的確認視窗
             showConfirm(
                 `<div class="flex flex-col gap-2">
-                    <div class="text-red-600 text-2xl"><i class="fa-solid fa-circle-exclamation"></i> 注意：未滿 3 分鐘</div>
-                    <div class="text-gray-800">距離上次給藥僅 <span class="font-mono text-3xl font-bold">${formatTime(diff)}</span></div>
-                    <div class="text-sm text-gray-500">標準間隔：3-5 分鐘</div>
-                    <div class="mt-2 pt-2 border-t border-gray-300 font-bold text-lg text-red-700">仍要強制給藥嗎？</div>
+                    <div class="text-white text-2xl"><i class="fa-solid fa-circle-exclamation"></i> 注意：未滿 3 分鐘</div>
+                    <div class="text-white">距離上次給藥僅 <span class="font-mono text-3xl font-bold text-white">${formatTime(diff)}</span></div>
+                    <div class="text-sm text-white">標準間隔：3-5 分鐘</div>
+                    <div class="mt-2 pt-2 border-t border-gray-500 font-bold text-lg text-white">仍要強制給藥嗎？</div>
                 </div>`,
                 runMedicationAction
             );
@@ -277,12 +290,12 @@ function confirmMed(drugName) {
     }
 
     // 正常情況 (第一次給藥 或 超過3分鐘 或 其他藥物) -> 顯示標準確認視窗
-    showConfirm(`確認給予 <span class="text-red-600">${drugName}</span> ?`, runMedicationAction);
+    showConfirm(`確認給予 <span class="text-white">${drugName}</span> ?`, runMedicationAction);
 }
 
 // 2. 電擊
 function confirmShock() {
-    showConfirm(`確認執行 <span class="text-yellow-600">電擊 (Shock)</span> ?`, () => {
+    showConfirm(`確認執行 <span class="text-white">電擊 (Shock)</span> ?`, () => {
         startSessionIfNeeded();
         state.shocks++;
         document.getElementById('shockCount').innerText = state.shocks;
@@ -317,7 +330,6 @@ function resetSession() {
     state.amioCount = 0;
 
     // 4. 重置 UI顯示
-    document.getElementById('totalTimer').innerText = "00:00";
     document.getElementById('lastMedTimer').innerText = "--:--";
 
     const statusDisplay = document.getElementById('statusDisplay');
@@ -334,8 +346,8 @@ function resetSession() {
     body.classList.add('bg-gray-900');
 
     const lastMedDisplay = document.getElementById('lastMedTimer');
-    lastMedDisplay.classList.add('text-yellow-400');
-    lastMedDisplay.classList.remove('text-red-500', 'text-white', 'alert-pulse');
+    lastMedDisplay.classList.add('text-text-white');
+    lastMedDisplay.classList.remove('alert-pulse');
 }
 
 // 新增：清除歷史紀錄的功能
@@ -389,7 +401,7 @@ function addLog(action, type) {
 function renderLogs() {
     const container = document.getElementById('logContainer');
     if (state.logs.length === 0) {
-        container.innerHTML = '<p class="text-center text-gray-500 mt-10">尚無紀錄</p>';
+        container.innerHTML = '<p class="text-center text-white mt-10">尚無紀錄</p>';
         return;
     }
 
@@ -401,16 +413,16 @@ function renderLogs() {
         if (log.type === 'Shock') {
             borderClass = 'border-yellow-500 bg-yellow-900/20';
             icon = '<i class="fa-solid fa-bolt text-yellow-500"></i>';
-            textClass = 'text-yellow-100';
+            textClass = 'text-white';
         } else if (log.type === 'Medication') {
             borderClass = 'border-blue-500 bg-blue-900/20';
             icon = '<i class="fa-solid fa-syringe text-blue-400"></i>';
-            textClass = 'text-blue-100';
+            textClass = 'text-white';
         }
 
         return `
             <div class="flex items-center p-3 rounded-lg border-l-4 ${borderClass} bg-gray-700/50">
-                <div class="w-16 text-xs text-gray-400 font-mono text-center">
+                <div class="w-16 text-xs text-text-white font-mono text-center">
                     <div>${log.time}</div>
                     <div>${log.elapsed}</div>
                 </div>
